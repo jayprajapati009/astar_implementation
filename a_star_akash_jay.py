@@ -619,6 +619,162 @@ def main():
     global step_size, clearance, robot_radius
     global goal_threshold, visited_mat, visited_threshold
 
+    # declare the canvas height and canvas width
+    canvas_height, canvas_width = 250, 600
+
+    # threshold to check the duplicate nodes
+    visited_threshold = 0.5
+
+    # matrix to store the info of visited region
+    visited_mat = np.zeros((500, 1200, 12), dtype=np.uint8)
+
+    # threshold for the goal periphery
+    goal_threshold = 1.5
+
+    # Print title on the terminal
+    print("#"*80)
+    print("#  Reach the goal (Path Planning using A*)")
+    print("#  Project-3")
+    print("#  ")
+    print("#  by")
+    print("#  Akash Parmar")
+    print("#  Jay Prajapati")
+    print("#"*80)
+
+    # initialize a loop to get input from valid points
+    loop = True
+    while loop:
+        print("\nEnter your choice for mode of operation,")
+        print("\nType 1 for selecting the parameters manually")
+        print("Type 2 for preset parameters")
+
+        # get the choice from the user for selecting the points manually or default
+        choice = int(input("\nYour Choice: "))
+
+        # get input for manual extry
+        if choice == 1:
+            start_x = int(input("\nEnter x coordinate of Start Point: "))
+            start_y = int(input("Enter y coordinate of Start Point: "))
+            start_theta = int(input("Enter theta coordinate of Start Point: "))
+            if start_theta % 30 != 0:
+                print("\n")
+                print("#"*80)
+                print("#  ERROR")
+                print("#  Theta should be a multiple of 30")
+                print("#"*80)
+                continue
+
+            goal_x = int(input("Enter x coordinate of Goal Point: "))
+            goal_y = int(input("Enter y coordinate of Goal Point: "))
+            goal_theta = int(input("Enter theta coordinate of Goal Point: "))
+            if start_theta % 30 != 0:
+                print("\n")
+                print("#"*80)
+                print("#  ERROR")
+                print("#  Theta should be a multiple of 30")
+                print("#"*80)
+                continue
+
+            clearance = int(input("Enter the clearance: "))
+            if clearance != 5:
+                print("\n")
+                print("#"*80)
+                print("#  ERROR")
+                print("#  The acceptable clearance is 5 as per the instructions")
+                print("#"*80)
+                continue
+
+            robot_radius = int(input("Enter the robot radius: "))
+            if robot_radius != 5:
+                print("\n")
+                print("#"*80)
+                print("#  ERROR")
+                print("#  The acceptable robot radius is 5 as per the instructions")
+                print("#"*80)
+                continue
+
+            step_size = int(float(input("Enter the step size: ")))
+            if step_size not in range(1, 11):
+                print("\n")
+                print("#"*80)
+                print("#  ERROR")
+                print("#  The acceptable step size is 1 <= step_size <= 10")
+                print("#"*80)
+                continue
+
+        # default setup points
+        elif choice == 2:
+            start_x = 10
+            start_y = 10
+            start_theta = 60
+
+            goal_x = 500
+            goal_y = 200
+            goal_theta = 0
+
+            clearance = 5
+            robot_radius = 5
+            step_size = 1
+
+        # error message for the invalid choices
+        else:
+            print("Invalid Choice")
+
+        # display the coordinates
+        print("\nStart Point = [", start_x, ", ",
+              start_y, ", ", start_theta, "]")
+        print("Goal Point = [", goal_x, ", ", goal_y, ", ", goal_theta, "]")
+
+        # make the canvas
+        canvas = createCanvas()
+
+        # check the solvability
+        if checkSolvable(start_x, start_y, canvas):
+            if checkSolvable(goal_x, goal_y, canvas):
+
+                # initiale the start and the goal node
+                start_node = NODE([start_x, start_y, start_theta], 0)
+                goal_node = NODE([goal_x, goal_y, goal_theta], 0)
+
+                print("\n")
+                print("#"*80)
+                print("#  Finding the goal node")
+
+                # note the start time
+                start_time = time.time()
+
+                # Explore nodes
+                node_graph, animation_canvas, animation_frames = aStar(
+                    start_node, goal_node)
+
+                # generate path
+                return_path = backTrack(node_graph, goal_node)
+
+                # note the end time
+                end_time = time.time()
+
+                print("#  ")
+                print("#  The output was processed in ",
+                      end_time-start_time, " seconds.")
+                print("#"*80)
+
+                # Mark the path
+                for a in return_path[::-1]:
+                    cv2.circle(animation_canvas, a, 1, (255, 0, 0), -1)
+                    animation_frames.append(animation_canvas.copy())
+                break
+
+        else:
+            # print the error message
+            print("\n")
+            print("#"*80)
+            print("#  ERROR")
+            print("#  The start point or goal point is on the obstacle")
+            print("#"*80)
+
+    # Visualize the exploration and save the animation
+    saveAnimation(animation_frames)
+
 
 if __name__ == "__main__":
     main()
