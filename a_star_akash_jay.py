@@ -598,10 +598,10 @@ def saveAnimation(animation_array):
 
     # write all the saved frames in the video
     for i in range(len(animation_array)):
-        cv2.imshow("Exploration", animation_array[i])
-        cv2.waitKey(1)
-        frame = animation_array[i]
+        frame = cv2.flip(animation_array[i], 0)
         video.write(frame)
+        cv2.imshow("Exploration", frame)
+        cv2.waitKey(1)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     video.release()
